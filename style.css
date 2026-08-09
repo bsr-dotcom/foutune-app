@@ -71,13 +71,26 @@ body {
 }
 
 #birthdate, #birthtime {
+  -webkit-appearance: none;
+  appearance: none;
+  box-sizing: border-box;
+  display: block;
   width: 100%;
+  max-width: 100%;
+  min-height: 44px;
   padding: 12px 14px;
   border-radius: 12px;
   border: 1px solid var(--card-border);
   background: rgba(255, 255, 255, 0.9);
+  background-clip: padding-box;
   color: #2a2a2a;
   font-size: 16px;
+  font-family: inherit;
+}
+
+#birthdate::-webkit-date-and-time-value,
+#birthtime::-webkit-date-and-time-value {
+  text-align: left;
 }
 
 .checkbox {
@@ -141,9 +154,35 @@ button:active { transform: scale(0.97); }
 .result__zodiac { font-size: 34px; }
 .result__zodiacName { font-size: 18px; font-weight: 600; }
 
-.saju, .saju__daymaster, .saju__elements, .saju__daeun {
+.saju, .saju__daymaster, .saju__elements, .saju__daeun, .recommend {
   border-top: 1px solid var(--card-border);
   padding-top: 12px;
+}
+
+.recommend__row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.recommend__icon {
+  font-size: 18px;
+  line-height: 1.4;
+}
+
+.recommend__label {
+  display: block;
+  font-size: 12px;
+  color: var(--gold);
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+
+.recommend__text {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
 }
 
 .saju__grid {

@@ -253,6 +253,31 @@ const MONTHLY_TEXT = {
   ],
 };
 
+// 일간(나의 타고난) 오행에 따른 오늘의 추천 - 매일 조금씩 바뀌도록 여러 항목 중 하나를 선택
+const MUSIC_BY_ELEMENT = {
+  목: ["잔잔한 어쿠스틱 플레이리스트", "청량한 인디 팝", "자연의 소리가 담긴 로파이", "희망찬 멜로디의 팝송"],
+  화: ["신나는 댄스 팝", "강렬한 록", "텐션 업 되는 EDM", "열정적인 라틴 리듬"],
+  토: ["따뜻한 어쿠스틱 발라드", "편안한 재즈", "포근한 R&B", "차분한 피아노 연주곡"],
+  금: ["깔끔한 클래식", "세련된 시티팝", "정교한 재즈 퓨전", "미니멀한 앰비언트"],
+  수: ["잔잔한 뉴에이지", "사색에 잠기게 하는 로파이", "깊은 울림의 발라드", "고요한 클래식 피아노"],
+};
+
+const BOOK_BY_ELEMENT = {
+  목: ["자기계발서", "성장 스토리를 담은 에세이", "여행 에세이", "식물·자연을 다룬 책"],
+  화: ["열정적인 인물의 자서전", "빠른 전개의 스릴러", "동기부여 강연집", "액션 가득한 소설"],
+  토: ["잔잔한 에세이", "일상을 다룬 소설", "요리·살림 관련 책", "마음을 다독이는 심리 에세이"],
+  금: ["논리적인 경제·경영서", "미스터리 추리소설", "정교하게 짜인 SF", "디자인·예술 관련 책"],
+  수: ["철학책", "깊이 있는 인문학 서적", "시집", "잔잔한 문학 소설"],
+};
+
+const HOBBY_BY_ELEMENT = {
+  목: ["화분 가꾸기", "가벼운 산책이나 등산", "새로운 것 배우기", "식물원·수목원 나들이"],
+  화: ["댄스나 운동", "친구들과의 모임", "공연·콘서트 관람", "액티비티 스포츠"],
+  토: ["요리나 베이킹", "집 정리·인테리어 꾸미기", "반신욕이나 명상", "가까운 사람과의 여유로운 티타임"],
+  금: ["손으로 만드는 공예", "정리정돈", "사진 촬영", "악기 연습"],
+  수: ["일기 쓰기", "혼자만의 독서 시간", "물멍(수족관·바다 감상)", "명상이나 요가"],
+};
+
 const ADVICE = [
   "서두르지 않아도 충분히 잘 하고 있어요.",
   "오늘 하루, 나 자신에게 작은 칭찬을 해주세요.",
@@ -416,6 +441,10 @@ function renderAll(birthdateStr, timeStr, timeUnknown, gender) {
 
   document.getElementById("zodiacEmoji").textContent = zodiac.emoji;
   document.getElementById("zodiacName").textContent = zodiac.name;
+
+  document.getElementById("recMusic").textContent = pick(MUSIC_BY_ELEMENT[dayMasterElement], seedBase + 31);
+  document.getElementById("recBook").textContent = pick(BOOK_BY_ELEMENT[dayMasterElement], seedBase + 37);
+  document.getElementById("recHobby").textContent = pick(HOBBY_BY_ELEMENT[dayMasterElement], seedBase + 41);
 
   document.getElementById("fortuneGeneral").textContent = `${RELATION_MAIN.총운[relation]} ${pick(GENERAL_DETAIL, seedBase + 1)}`;
   document.getElementById("fortuneLove").textContent = `${RELATION_MAIN.애정운[relation]} ${pick(LOVE_DETAIL, seedBase + 7)}`;
