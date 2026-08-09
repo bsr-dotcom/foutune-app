@@ -1,4 +1,141 @@
-// ---- 문구 데이터 ----
+// ================== 사주(四柱) 계산 ==================
+const STEMS = ["갑", "을", "병", "정", "무", "기", "경", "신", "임", "계"];
+const STEMS_HANJA = ["甲", "乙", "丙", "丁", "戊", "己", "庚", "辛", "壬", "癸"];
+const STEM_ELEMENT = ["목", "목", "화", "화", "토", "토", "금", "금", "수", "수"];
+
+const BRANCHES = ["자", "축", "인", "묘", "진", "사", "오", "미", "신", "유", "술", "해"];
+const BRANCHES_HANJA = ["子", "丑", "寅", "卯", "辰", "巳", "午", "未", "申", "酉", "戌", "亥"];
+const BRANCH_ELEMENT = ["수", "토", "목", "목", "토", "화", "화", "토", "금", "금", "토", "수"];
+
+const ELEMENT_COLOR = { 목: "#5fbf7a", 화: "#ff7a5c", 토: "#d9a441", 금: "#c9c9d9", 수: "#5b9bd9" };
+const ELEMENT_ORDER = ["목", "화", "토", "금", "수"];
+
+function toJulianDayNumber(y, m, d) {
+  const a = Math.floor((14 - m) / 12);
+  const yy = y + 4800 - a;
+  const mm = m + 12 * a - 3;
+  return d + Math.floor((153 * mm + 2) / 5) + 365 * yy + Math.floor(yy / 4) - Math.floor(yy / 100) + Math.floor(yy / 400) - 32045;
+}
+
+// 일주(日柱): 기준식 (JDN + 49) % 60 => 60갑자 인덱스
+function getDayGanzhiIndex(y, m, d) {
+  const jdn = toJulianDayNumber(y, m, d);
+  return ((jdn + 49) % 60 + 60) % 60;
+}
+
+// 입춘(2/4) 기준 절입년도 계산: 그 해 2/4 이전 생일이면 전년도로 취급
+function getSajuYear(y, m, d) {
+  if (m < 2 || (m === 2 && d < 4)) return y - 1;
+  return y;
+}
+
+// 년주: 1984년 = 갑자년(인덱스0) 기준
+function getYearGanzhiIndex(sajuYear) {
+  return ((sajuYear - 1984) % 60 + 60) % 60;
+}
+
+// 월지 결정: 절기 경계값을 기준으로 어느 지지월에 속하는지 찾기
+// 자월(대설, 12/7~) ~ 축월(소한, 1/6~2/3)은 연말/연초를 걸치므로 별도 처리
+function getMonthBranchIndex(m, d) {
+  const dateVal = m * 100 + d; // 예: 3월6일 -> 306, 비교용 정수
+  if (dateVal >= 204 && dateVal < 306) return 2;   // 인월 2/4~3/5
+  if (dateVal >= 306 && dateVal < 405) return 3;   // 묘월 3/6~4/4
+  if (dateVal >= 405 && dateVal < 506) return 4;   // 진월 4/5~5/5
+  if (dateVal >= 506 && dateVal < 606) return 5;   // 사월 5/6~6/5
+  if (dateVal >= 606 && dateVal < 707) return 6;   // 오월 6/6~7/6
+  if (dateVal >= 707 && dateVal < 808) return 7;   // 미월 7/7~8/7
+  if (dateVal >= 808 && dateVal < 908) return 8;   // 신월 8/8~9/7
+  if (dateVal >= 908 && dateVal < 1008) return 9;  // 유월 9/8~10/7
+  if (dateVal >= 1008 && dateVal < 1107) return 10; // 술월 10/8~11/6
+  if (dateVal >= 1107 && dateVal < 1207) return 11; // 해월 11/7~12/6
+  if (dateVal >= 1207 || dateVal < 106) return 0;   // 자월 12/7~1/5 (연말/연초)
+  return 1; // 축월 1/6~2/3
+}
+
+// 월간: 년간에 따른 인월(寅月) 기준 천간(오호둔법)
+function getMonthStemIndex(yearStemIndex, monthBranchIndex) {
+  const baseForYin = (2 * (yearStemIndex % 5) + 2) % 10; // 인월(2)의 천간
+  const order = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 0, 1]; // 인묘진사오미신유술해자축
+  const k = order.indexOf(monthBranchIndex);
+  return (baseForYin + k) % 10;
+}
+
+// 시지: 30분 단위까지 고려한 2시간 단위 구간 (23:00~00:59 = 자시)
+function getHourBranchIndex(hour) {
+  return Math.floor(((hour + 1) % 24) / 2);
+}
+
+// 시간: 일간에 따른 자시(子時) 기준 천간(오서둔법)
+function getHourStemIndex(dayStemIndex, hourBranchIndex) {
+  const baseForZi = (2 * (dayStemIndex % 5)) % 10;
+  return (baseForZi + hourBranchIndex) % 10;
+}
+
+function calcSaju(birthdateStr, timeStr, timeUnknown) {
+  const [y, m, d] = birthdateStr.split("-").map(Number);
+
+  const sajuYear = getSajuYear(y, m, d);
+  const yearIdx = getYearGanzhiIndex(sajuYear);
+  const yearStem = yearIdx % 10;
+  const yearBranch = yearIdx % 12;
+
+  const monthBranch = getMonthBranchIndex(m, d);
+  const monthStem = getMonthStemIndex(yearStem, monthBranch);
+
+  const dayIdx = getDayGanzhiIndex(y, m, d);
+  const dayStem = dayIdx % 10;
+  const dayBranch = dayIdx % 12;
+
+  let hourStem = null, hourBranch = null;
+  if (!timeUnknown && timeStr) {
+    let hour = parseInt(timeStr.split(":")[0], 10);
+    let dStem = dayStem;
+    if (hour === 23) {
+      // 23시는 다음날 자시로 취급 -> 일주는 다음날 기준
+      const nextDayIdx = ((toJulianDayNumber(y, m, d) + 1 + 49) % 60 + 60) % 60;
+      dStem = nextDayIdx % 10;
+    }
+    hourBranch = getHourBranchIndex(hour);
+    hourStem = getHourStemIndex(dStem, hourBranch);
+  }
+
+  return {
+    year: { stem: yearStem, branch: yearBranch },
+    month: { stem: monthStem, branch: monthBranch },
+    day: { stem: dayStem, branch: dayBranch },
+    hour: hourStem === null ? null : { stem: hourStem, branch: hourBranch },
+  };
+}
+
+function pillarText(pillar) {
+  if (!pillar) return { hanja: "-", hangul: "모름" };
+  return {
+    hanja: STEMS_HANJA[pillar.stem] + BRANCHES_HANJA[pillar.branch],
+    hangul: STEMS[pillar.stem] + BRANCHES[pillar.branch],
+  };
+}
+
+const DAY_MASTER_TEXT = [
+  "큰 나무(甲)처럼 곧고 리더십이 있어요. 정직하고 성장 지향적인 성향이에요.",
+  "화초(乙)처럼 유연하고 적응력이 좋아요. 부드럽지만 은근히 강단이 있어요.",
+  "태양(丙)처럼 밝고 열정적이에요. 존재감이 뚜렷한 리더 기질이 있어요.",
+  "촛불(丁)처럼 섬세하고 따뜻해요. 은은하지만 꾸준한 영향력을 가져요.",
+  "큰 산(戊)처럼 묵직하고 신뢰감이 있어요. 안정적이고 포용력이 커요.",
+  "기름진 땅(己)처럼 부드럽고 포용력이 있어요. 실용적이고 헌신적이에요.",
+  "무쇠(庚)처럼 강직하고 결단력이 있어요. 원칙을 중시하는 타입이에요.",
+  "보석(辛)처럼 섬세하고 예리해요. 완벽을 추구하는 성향이 있어요.",
+  "큰 바다(壬)처럼 지혜롭고 스케일이 커요. 포용력 있고 유연한 사고를 해요.",
+  "이슬비(癸)처럼 섬세하고 직관이 발달했어요. 조용히 스며드는 영향력이 있어요.",
+];
+
+// 대운 방향: 양간(짝수 인덱스)+남성 또는 음간(홀수)+여성 -> 순행, 그 반대는 역행
+function getDaeunDirection(yearStemIndex, gender) {
+  const isYang = yearStemIndex % 2 === 0;
+  const forward = (isYang && gender === "남성") || (!isYang && gender === "여성");
+  return forward ? "순행" : "역행";
+}
+
+// ================== 오늘의 운세 문구 데이터 ==================
 const GENERAL = [
   "오늘은 막혔던 일이 자연스럽게 풀리는 하루예요.",
   "작은 행운이 여러 번 찾아오는 날입니다.",
@@ -79,7 +216,6 @@ function pick(list, seedNumber) {
 }
 
 function getZodiac(year) {
-  // 1900년은 쥐띠 기준
   const idx = ((year - 1900) % 12 + 12) % 12;
   return ZODIACS[idx];
 }
@@ -95,8 +231,10 @@ function todayKey() {
   return `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`;
 }
 
-// ---- 메인 로직 ----
+// ================== 화면 로직 ==================
 const birthdateInput = document.getElementById("birthdate");
+const birthtimeInput = document.getElementById("birthtime");
+const timeUnknownCheckbox = document.getElementById("timeUnknown");
 const showBtn = document.getElementById("showBtn");
 const backBtn = document.getElementById("backBtn");
 const formCard = document.getElementById("formCard");
@@ -104,19 +242,34 @@ const resultCard = document.getElementById("resultCard");
 
 document.getElementById("todayLabel").textContent = formatTodayLabel();
 
-const savedBirthdate = localStorage.getItem("fortune_birthdate");
-if (savedBirthdate) {
-  birthdateInput.value = savedBirthdate;
+const saved = JSON.parse(localStorage.getItem("fortune_profile") || "null");
+if (saved) {
+  birthdateInput.value = saved.birthdate || "";
+  birthtimeInput.value = saved.birthtime || "";
+  timeUnknownCheckbox.checked = !!saved.timeUnknown;
+  if (saved.gender) {
+    const radio = document.querySelector(`input[name="gender"][value="${saved.gender}"]`);
+    if (radio) radio.checked = true;
+  }
 }
 
+timeUnknownCheckbox.addEventListener("change", () => {
+  birthtimeInput.disabled = timeUnknownCheckbox.checked;
+});
+birthtimeInput.disabled = timeUnknownCheckbox.checked;
+
 showBtn.addEventListener("click", () => {
-  const value = birthdateInput.value;
-  if (!value) {
+  const birthdate = birthdateInput.value;
+  if (!birthdate) {
     alert("생년월일을 먼저 입력해주세요!");
     return;
   }
-  localStorage.setItem("fortune_birthdate", value);
-  renderFortune(value);
+  const timeUnknown = timeUnknownCheckbox.checked;
+  const birthtime = timeUnknown ? "" : birthtimeInput.value;
+  const gender = document.querySelector('input[name="gender"]:checked').value;
+
+  localStorage.setItem("fortune_profile", JSON.stringify({ birthdate, birthtime, timeUnknown, gender }));
+  renderAll(birthdate, birthtime, timeUnknown, gender);
 });
 
 backBtn.addEventListener("click", () => {
@@ -124,8 +277,59 @@ backBtn.addEventListener("click", () => {
   formCard.hidden = false;
 });
 
-function renderFortune(birthdateStr) {
-  const seedBase = simpleHash(birthdateStr + "_" + todayKey());
+function renderSaju(saju, gender) {
+  const grid = document.getElementById("sajuGrid");
+  const pillars = [
+    { label: "년주", data: saju.year },
+    { label: "월주", data: saju.month },
+    { label: "일주", data: saju.day },
+    { label: "시주", data: saju.hour },
+  ];
+  grid.innerHTML = pillars.map((p) => {
+    const t = pillarText(p.data);
+    return `<div class="saju__pillar">
+      <span class="saju__pillar-label">${p.label}</span>
+      <div class="saju__pillar-hanja">${t.hanja}</div>
+      <span class="saju__pillar-hangul">${t.hangul}</span>
+    </div>`;
+  }).join("");
+
+  document.getElementById("sajuTimeNote").textContent = saju.hour
+    ? "※ 간단 계산식 기반 참고용 사주이며, 절기 경계일 근처는 실제와 다를 수 있어요."
+    : "※ 태어난 시간이 없어 시주는 계산하지 않았어요. (참고용 계산이며 절기 경계일 근처는 실제와 다를 수 있어요)";
+
+  document.getElementById("dayMasterText").textContent = DAY_MASTER_TEXT[saju.day.stem];
+
+  // 오행 분포 계산
+  const counts = { 목: 0, 화: 0, 토: 0, 금: 0, 수: 0 };
+  const parts = [saju.year, saju.month, saju.day, saju.hour].filter(Boolean);
+  parts.forEach((p) => {
+    counts[STEM_ELEMENT[p.stem]]++;
+    counts[BRANCH_ELEMENT[p.branch]]++;
+  });
+  const total = parts.length * 2;
+
+  const bar = document.getElementById("elementsBar");
+  bar.innerHTML = ELEMENT_ORDER.map((el) => {
+    const pct = total ? (counts[el] / total) * 100 : 0;
+    if (pct === 0) return "";
+    return `<div style="width:${pct}%; background:${ELEMENT_COLOR[el]}"></div>`;
+  }).join("");
+
+  const legend = document.getElementById("elementsLegend");
+  legend.innerHTML = ELEMENT_ORDER.map((el) =>
+    `<span><span class="dot" style="background:${ELEMENT_COLOR[el]}"></span>${el} ${counts[el]}개</span>`
+  ).join("");
+
+  document.getElementById("daeunText").textContent =
+    `${gender} · ${STEMS[saju.year.stem]}년생 기준 대운은 ${getDaeunDirection(saju.year.stem, gender)}합니다. (실제 대운 시작 나이는 절기 정밀 계산이 필요해 이 앱에서는 방향만 안내해요)`;
+}
+
+function renderAll(birthdateStr, timeStr, timeUnknown, gender) {
+  const saju = calcSaju(birthdateStr, timeStr, timeUnknown);
+  renderSaju(saju, gender);
+
+  const seedBase = simpleHash(birthdateStr + "_" + gender + "_" + todayKey());
   const year = parseInt(birthdateStr.split("-")[0], 10);
   const zodiac = getZodiac(year);
 
