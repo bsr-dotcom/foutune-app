@@ -254,20 +254,60 @@ const MONTHLY_TEXT = {
 };
 
 // 일간(나의 타고난) 오행에 따른 오늘의 추천 - 매일 조금씩 바뀌도록 여러 항목 중 하나를 선택
-const MUSIC_BY_ELEMENT = {
-  목: ["잔잔한 어쿠스틱 플레이리스트", "청량한 인디 팝", "자연의 소리가 담긴 로파이", "희망찬 멜로디의 팝송"],
-  화: ["신나는 댄스 팝", "강렬한 록", "텐션 업 되는 EDM", "열정적인 라틴 리듬"],
-  토: ["따뜻한 어쿠스틱 발라드", "편안한 재즈", "포근한 R&B", "차분한 피아노 연주곡"],
-  금: ["깔끔한 클래식", "세련된 시티팝", "정교한 재즈 퓨전", "미니멀한 앰비언트"],
-  수: ["잔잔한 뉴에이지", "사색에 잠기게 하는 로파이", "깊은 울림의 발라드", "고요한 클래식 피아노"],
+const SONG_BY_ELEMENT = {
+  목: [
+    { title: "이름에게", artist: "아이유" },
+    { title: "주저하는 연인들을 위해", artist: "잔나비" },
+    { title: "여행", artist: "볼빨간사춘기" },
+  ],
+  화: [
+    { title: "Dynamite", artist: "방탄소년단" },
+    { title: "HIP", artist: "마마무" },
+    { title: "Uptown Funk", artist: "Bruno Mars" },
+  ],
+  토: [
+    { title: "모든 날, 모든 순간", artist: "폴킴" },
+    { title: "헤픈 우연", artist: "헤이즈" },
+    { title: "눈사람", artist: "정승환" },
+  ],
+  금: [
+    { title: "Blueming", artist: "아이유" },
+    { title: "Breeze", artist: "나윤선" },
+    { title: "re:member", artist: "Ólafur Arnalds" },
+  ],
+  수: [
+    { title: "밤편지", artist: "아이유" },
+    { title: "Kiss the Rain", artist: "이루마" },
+    { title: "안녕", artist: "폴킴" },
+  ],
 };
 
 const BOOK_BY_ELEMENT = {
-  목: ["자기계발서", "성장 스토리를 담은 에세이", "여행 에세이", "식물·자연을 다룬 책"],
-  화: ["열정적인 인물의 자서전", "빠른 전개의 스릴러", "동기부여 강연집", "액션 가득한 소설"],
-  토: ["잔잔한 에세이", "일상을 다룬 소설", "요리·살림 관련 책", "마음을 다독이는 심리 에세이"],
-  금: ["논리적인 경제·경영서", "미스터리 추리소설", "정교하게 짜인 SF", "디자인·예술 관련 책"],
-  수: ["철학책", "깊이 있는 인문학 서적", "시집", "잔잔한 문학 소설"],
+  목: [
+    { title: "연금술사", author: "파울로 코엘료" },
+    { title: "아몬드", author: "손원평" },
+    { title: "미움받을 용기", author: "기시미 이치로" },
+  ],
+  화: [
+    { title: "달러구트 꿈 백화점", author: "이미예" },
+    { title: "불편한 편의점", author: "김호연" },
+    { title: "데일 카네기 인간관계론", author: "데일 카네기" },
+  ],
+  토: [
+    { title: "여행의 이유", author: "김영하" },
+    { title: "보통의 존재", author: "이석원" },
+    { title: "살아있는 것은 다 행복하라", author: "법정" },
+  ],
+  금: [
+    { title: "사피엔스", author: "유발 하라리" },
+    { title: "팩트풀니스", author: "한스 로슬링" },
+    { title: "생각에 관한 생각", author: "대니얼 카너먼" },
+  ],
+  수: [
+    { title: "데미안", author: "헤르만 헤세" },
+    { title: "어린 왕자", author: "생텍쥐페리" },
+    { title: "나미야 잡화점의 기적", author: "히가시노 게이고" },
+  ],
 };
 
 const HOBBY_BY_ELEMENT = {
@@ -368,6 +408,51 @@ showBtn.addEventListener("click", () => {
   renderAll(birthdate, birthtime, timeUnknown, gender);
 });
 
+// ---- 음악/책 추천 & 1회 재추천 ----
+const recState = { element: null, songIndex: -1, bookIndex: -1 };
+
+function renderSong(element, index) {
+  const song = SONG_BY_ELEMENT[element][index];
+  document.getElementById("recMusic").textContent = `${song.title} - ${song.artist}`;
+  document.getElementById("recMusicLink").href =
+    `https://www.youtube.com/results?search_query=${encodeURIComponent(song.artist + " " + song.title)}`;
+}
+
+function renderBook(element, index) {
+  const book = BOOK_BY_ELEMENT[element][index];
+  document.getElementById("recBook").textContent = `《${book.title}》 - ${book.author}`;
+  document.getElementById("recBookLink").href =
+    `https://www.google.com/search?q=${encodeURIComponent(book.title + " " + book.author)}`;
+}
+
+// 이미 나온 index를 피해서 다른 항목의 index를 고른다
+function pickIndexExcluding(length, excludeIndex) {
+  if (length <= 1) return excludeIndex;
+  let idx;
+  do {
+    idx = Math.floor(Math.random() * length);
+  } while (idx === excludeIndex);
+  return idx;
+}
+
+document.getElementById("recMusicRetry").addEventListener("click", () => {
+  const btn = document.getElementById("recMusicRetry");
+  if (btn.disabled) return;
+  recState.songIndex = pickIndexExcluding(SONG_BY_ELEMENT[recState.element].length, recState.songIndex);
+  renderSong(recState.element, recState.songIndex);
+  btn.disabled = true;
+  btn.textContent = "재추천 완료";
+});
+
+document.getElementById("recBookRetry").addEventListener("click", () => {
+  const btn = document.getElementById("recBookRetry");
+  if (btn.disabled) return;
+  recState.bookIndex = pickIndexExcluding(BOOK_BY_ELEMENT[recState.element].length, recState.bookIndex);
+  renderBook(recState.element, recState.bookIndex);
+  btn.disabled = true;
+  btn.textContent = "재추천 완료";
+});
+
 backBtn.addEventListener("click", () => {
   resultCard.hidden = true;
   formCard.hidden = false;
@@ -442,8 +527,19 @@ function renderAll(birthdateStr, timeStr, timeUnknown, gender) {
   document.getElementById("zodiacEmoji").textContent = zodiac.emoji;
   document.getElementById("zodiacName").textContent = zodiac.name;
 
-  document.getElementById("recMusic").textContent = pick(MUSIC_BY_ELEMENT[dayMasterElement], seedBase + 31);
-  document.getElementById("recBook").textContent = pick(BOOK_BY_ELEMENT[dayMasterElement], seedBase + 37);
+  recState.element = dayMasterElement;
+  recState.songIndex = (seedBase + 31) % SONG_BY_ELEMENT[dayMasterElement].length;
+  renderSong(recState.element, recState.songIndex);
+  recState.bookIndex = (seedBase + 37) % BOOK_BY_ELEMENT[dayMasterElement].length;
+  renderBook(recState.element, recState.bookIndex);
+
+  const musicRetryBtn = document.getElementById("recMusicRetry");
+  musicRetryBtn.disabled = false;
+  musicRetryBtn.textContent = "🔄 다른 곡 추천 (1회)";
+  const bookRetryBtn = document.getElementById("recBookRetry");
+  bookRetryBtn.disabled = false;
+  bookRetryBtn.textContent = "🔄 다른 책 추천 (1회)";
+
   document.getElementById("recHobby").textContent = pick(HOBBY_BY_ELEMENT[dayMasterElement], seedBase + 41);
 
   document.getElementById("fortuneGeneral").textContent = `${RELATION_MAIN.총운[relation]} ${pick(GENERAL_DETAIL, seedBase + 1)}`;
