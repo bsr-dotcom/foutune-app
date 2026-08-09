@@ -281,6 +281,63 @@ button:active { transform: scale(0.97); }
   line-height: 1.5;
 }
 
+.monthly__desc {
+  margin: 0 0 8px;
+  font-size: 13px;
+  color: var(--text-dim);
+}
+
+.monthly__toggle {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--card-border);
+  color: var(--text);
+  font-weight: 500;
+  padding: 10px;
+}
+
+.monthly__grid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.monthly__card {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  padding: 10px 12px;
+}
+
+.monthly__card-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.monthly__card-month {
+  font-weight: 700;
+  color: var(--gold);
+  font-size: 14px;
+}
+
+.monthly__card-tag {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-dim);
+}
+
+.monthly__card-text {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-dim);
+}
+
 .app__footer {
   text-align: center;
   color: var(--text-dim);

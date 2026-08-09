@@ -10,6 +10,20 @@ const BRANCH_ELEMENT = ["수", "토", "목", "목", "토", "화", "화", "토", 
 const ELEMENT_COLOR = { 목: "#5fbf7a", 화: "#ff7a5c", 토: "#d9a441", 금: "#c9c9d9", 수: "#5b9bd9" };
 const ELEMENT_ORDER = ["목", "화", "토", "금", "수"];
 
+const ELEMENT_GENERATES = { 목: "화", 화: "토", 토: "금", 금: "수", 수: "목" };
+const ELEMENT_OVERCOMES = { 목: "토", 토: "수", 수: "화", 화: "금", 금: "목" };
+
+// 일간(dme) 오행 기준으로 상대 오행(other)과의 관계를 단순화한 십성 그룹으로 분류
+function elementRelation(dme, other) {
+  if (dme === other) return "비화";
+  if (ELEMENT_GENERATES[dme] === other) return "식상";
+  if (ELEMENT_GENERATES[other] === dme) return "인성";
+  if (ELEMENT_OVERCOMES[dme] === other) return "재성";
+  return "관성";
+}
+
+const RELATION_LABEL = { 비화: "동행", 식상: "표현", 재성: "결실", 관성: "긴장", 인성: "지원" };
+
 function toJulianDayNumber(y, m, d) {
   const a = Math.floor((14 - m) / 12);
   const yy = y + 4800 - a;
@@ -136,21 +150,51 @@ function getDaeunDirection(yearStemIndex, gender) {
 }
 
 // ================== 오늘의 운세 문구 데이터 ==================
-const GENERAL = [
-  "오늘은 막혔던 일이 자연스럽게 풀리는 하루예요.",
-  "작은 행운이 여러 번 찾아오는 날입니다.",
-  "차분하게 움직이면 좋은 결과가 따라와요.",
+// 일간(나) 오행과 오늘의 일간 오행 사이의 관계(비화/식상/재성/관성/인성)에 따른 핵심 문장
+const RELATION_MAIN = {
+  총운: {
+    비화: "오늘은 나와 비슷한 기운이 흘러서 평소의 페이스를 유지하기 좋은 날이에요.",
+    식상: "생각과 아이디어가 자연스럽게 밖으로 표현되는 기운이 강한 날이에요.",
+    재성: "노력한 만큼 눈에 보이는 결실로 이어지기 쉬운 날이에요.",
+    관성: "책임과 부담이 조금 늘어날 수 있는 날이니 무리한 확장은 피하는 게 좋아요.",
+    인성: "주변의 도움과 배움의 기회가 많이 따라오는 날이에요.",
+  },
+  애정운: {
+    비화: "비슷한 성향의 사람과 편안하게 마음이 통하는 날이에요.",
+    식상: "감정 표현이 자연스러워져서 마음을 전하기 좋은 날이에요.",
+    재성: "상대에게 정성을 쏟으면 관계가 결실을 맺기 쉬운 날이에요.",
+    관성: "관계에서 오는 부담감이나 긴장감을 느낄 수 있어 여유를 갖는 게 좋아요.",
+    인성: "누군가의 따뜻한 배려나 위로를 받기 좋은 날이에요.",
+  },
+  금전운: {
+    비화: "안정적인 흐름 속에서 지출과 수입의 균형을 잡기 좋은 날이에요.",
+    식상: "아이디어나 재능을 활용한 수입 기회가 보일 수 있는 날이에요.",
+    재성: "실질적인 재물 성과를 기대할 수 있는 날이에요.",
+    관성: "예상치 못한 지출이나 부담이 생길 수 있어 지출 계획을 점검하세요.",
+    인성: "재정 관리에 도움이 되는 정보나 조언을 얻기 좋은 날이에요.",
+  },
+  건강운: {
+    비화: "몸과 마음의 균형이 잘 맞아 컨디션을 유지하기 좋은 날이에요.",
+    식상: "활동적으로 움직이면 에너지가 잘 발산되는 날이에요.",
+    재성: "몸을 부지런히 움직인 만큼 성취감을 느낄 수 있는 날이에요.",
+    관성: "피로나 스트레스가 쌓이기 쉬우니 충분한 휴식이 필요해요.",
+    인성: "휴식과 재충전에 특히 좋은 기운이 흐르는 날이에요.",
+  },
+};
+
+// 관계별 핵심 문장 뒤에 붙는 보충 설명 (다양성을 위해 오늘 날짜로 랜덤 선택)
+const GENERAL_DETAIL = [
+  "작은 행운이 여러 번 찾아올 수 있어요.",
   "예상치 못한 곳에서 반가운 소식이 들려올 수 있어요.",
   "오늘 내린 결정이 나중에 큰 도움이 될 거예요.",
   "주변 사람의 도움으로 일이 수월하게 풀려요.",
-  "새로운 시작을 하기에 아주 좋은 기운이 감돌아요.",
-  "무리하지 않고 페이스를 지키면 순조로운 하루가 됩니다.",
+  "새로운 시작을 하기에 나쁘지 않은 흐름이에요.",
   "생각보다 여유로운 시간이 생길 수 있어요.",
   "평소보다 집중력이 좋아서 성과를 내기 좋아요.",
+  "차분하게 움직이면 좋은 결과가 따라와요.",
 ];
 
-const LOVE = [
-  "솔직한 마음을 표현하면 관계가 한 뼘 더 가까워져요.",
+const LOVE_DETAIL = [
   "짝사랑 중이라면 자연스러운 대화 기회가 생길 수 있어요.",
   "연인과는 작은 배려가 큰 감동으로 이어지는 날이에요.",
   "혼자만의 시간을 즐기는 것도 좋은 선택이에요.",
@@ -160,9 +204,8 @@ const LOVE = [
   "감정 표현보다 행동으로 마음을 보여주는 게 효과적이에요.",
 ];
 
-const MONEY = [
+const MONEY_DETAIL = [
   "계획했던 지출은 괜찮지만 충동구매는 조심하세요.",
-  "예상치 못한 작은 수입이 생길 수 있어요.",
   "돈 관리 앱이나 가계부를 점검하기 좋은 날이에요.",
   "투자보다는 저축에 신경 쓰는 게 유리해요.",
   "협상이나 흥정에서 좋은 결과를 얻을 수 있어요.",
@@ -171,7 +214,7 @@ const MONEY = [
   "재정 상태를 점검하면 뜻밖의 여유를 발견해요.",
 ];
 
-const HEALTH = [
+const HEALTH_DETAIL = [
   "가벼운 스트레칭이 하루 컨디션을 크게 바꿔줘요.",
   "수분 섭취를 평소보다 신경 쓰면 좋아요.",
   "충분한 수면이 오늘의 컨디션을 좌우해요.",
@@ -179,8 +222,36 @@ const HEALTH = [
   "가벼운 산책이 기분 전환에 큰 도움이 돼요.",
   "과식하지 않도록 식사량을 조절해보세요.",
   "몸이 보내는 신호를 무시하지 말고 쉬어가세요.",
-  "컨디션이 좋아 활동적으로 지내기 좋은 날이에요.",
 ];
+
+// 월별 운세: 그 달의 지지 오행과 일간의 관계(RELATION_LABEL)에 따른 문장 풀
+const MONTHLY_TEXT = {
+  비화: [
+    "이 달은 나와 비슷한 기운이 흘러 안정적으로 자기 페이스를 지키기 좋아요.",
+    "협업과 동료 관계에서 힘을 얻기 좋은 달이에요.",
+    "무리한 변화보다 꾸준함이 통하는 시기예요.",
+  ],
+  식상: [
+    "생각과 아이디어가 자연스럽게 표현되는 달이에요.",
+    "창작, 발표, 소통과 관련된 일에 유리해요.",
+    "새로운 시도를 해보기 좋은 활동적인 흐름이에요.",
+  ],
+  재성: [
+    "노력한 만큼 결과로 이어지기 쉬운 달이에요.",
+    "재물이나 성과 면에서 실속을 챙기기 좋아요.",
+    "계획했던 일을 마무리 짓기 좋은 시기예요.",
+  ],
+  관성: [
+    "책임과 부담이 늘어날 수 있는 달이에요.",
+    "무리한 확장보다 내실을 다지는 게 좋아요.",
+    "중요한 결정은 신중하게 접근하세요.",
+  ],
+  인성: [
+    "주변의 도움과 배움의 기회가 많은 달이에요.",
+    "휴식과 재충전에도 좋은 시기예요.",
+    "공부나 자기계발에 집중하기 좋은 흐름이에요.",
+  ],
+};
 
 const ADVICE = [
   "서두르지 않아도 충분히 잘 하고 있어요.",
@@ -321,13 +392,23 @@ function renderSaju(saju, gender) {
     `<span><span class="dot" style="background:${ELEMENT_COLOR[el]}"></span>${el} ${counts[el]}개</span>`
   ).join("");
 
+  const direction = getDaeunDirection(saju.year.stem, gender);
+  const directionDetail = direction === "순행"
+    ? "순행은 시간이 흐르는 방향과 같은 흐름이라, 비교적 완만하고 예측 가능한 변화 곡선을 그리는 경향이 있어요."
+    : "역행은 시간의 흐름과 반대 방향으로 대운이 진행돼서, 예상 밖의 전환점이 상대적으로 자주 찾아올 수 있어요.";
   document.getElementById("daeunText").textContent =
-    `${gender} · ${STEMS[saju.year.stem]}년생 기준 대운은 ${getDaeunDirection(saju.year.stem, gender)}합니다. (실제 대운 시작 나이는 절기 정밀 계산이 필요해 이 앱에서는 방향만 안내해요)`;
+    `${gender} · ${STEMS[saju.year.stem]}(${STEM_ELEMENT[saju.year.stem]}) 년간 기준으로 대운은 ${direction}합니다. ${directionDetail} 실제 대운이 시작되는 나이는 절기 시각까지 정밀하게 계산해야 나오기 때문에, 이 앱에서는 방향만 참고용으로 안내해요.`;
 }
 
 function renderAll(birthdateStr, timeStr, timeUnknown, gender) {
   const saju = calcSaju(birthdateStr, timeStr, timeUnknown);
   renderSaju(saju, gender);
+
+  const dayMasterElement = STEM_ELEMENT[saju.day.stem];
+  const today = new Date();
+  const todayDayIdx = getDayGanzhiIndex(today.getFullYear(), today.getMonth() + 1, today.getDate());
+  const todayElement = STEM_ELEMENT[todayDayIdx % 10];
+  const relation = elementRelation(dayMasterElement, todayElement);
 
   const seedBase = simpleHash(birthdateStr + "_" + gender + "_" + todayKey());
   const year = parseInt(birthdateStr.split("-")[0], 10);
@@ -336,17 +417,52 @@ function renderAll(birthdateStr, timeStr, timeUnknown, gender) {
   document.getElementById("zodiacEmoji").textContent = zodiac.emoji;
   document.getElementById("zodiacName").textContent = zodiac.name;
 
-  document.getElementById("fortuneGeneral").textContent = pick(GENERAL, seedBase + 1);
-  document.getElementById("fortuneLove").textContent = pick(LOVE, seedBase + 7);
-  document.getElementById("fortuneMoney").textContent = pick(MONEY, seedBase + 13);
-  document.getElementById("fortuneHealth").textContent = pick(HEALTH, seedBase + 19);
+  document.getElementById("fortuneGeneral").textContent = `${RELATION_MAIN.총운[relation]} ${pick(GENERAL_DETAIL, seedBase + 1)}`;
+  document.getElementById("fortuneLove").textContent = `${RELATION_MAIN.애정운[relation]} ${pick(LOVE_DETAIL, seedBase + 7)}`;
+  document.getElementById("fortuneMoney").textContent = `${RELATION_MAIN.금전운[relation]} ${pick(MONEY_DETAIL, seedBase + 13)}`;
+  document.getElementById("fortuneHealth").textContent = `${RELATION_MAIN.건강운[relation]} ${pick(HEALTH_DETAIL, seedBase + 19)}`;
   document.getElementById("luckyColor").textContent = pick(COLORS, seedBase + 23);
   document.getElementById("luckyNumber").textContent = (seedBase % 45) + 1;
+  renderMonthly(dayMasterElement);
   document.getElementById("advice").textContent = pick(ADVICE, seedBase + 29);
 
   formCard.hidden = true;
   resultCard.hidden = false;
 }
+
+function renderMonthly(dayMasterElement) {
+  const year = new Date().getFullYear();
+  document.getElementById("monthlyYearLabel").textContent = `${year}년 기준 (양력, 절기 근사치 적용)`;
+
+  const grid = document.getElementById("monthlyGrid");
+  const toggleBtn = document.getElementById("monthlyToggleBtn");
+  grid.hidden = true;
+  toggleBtn.textContent = "월별 운세 펼쳐보기 ▾";
+
+  let html = "";
+  for (let m = 1; m <= 12; m++) {
+    const branch = getMonthBranchIndex(m, 15);
+    const element = BRANCH_ELEMENT[branch];
+    const relation = elementRelation(dayMasterElement, element);
+    const seed = simpleHash(`${year}-${m}-monthly`);
+    const text = pick(MONTHLY_TEXT[relation], seed);
+    html += `<div class="monthly__card">
+      <div class="monthly__card-head">
+        <span class="monthly__card-month">${m}월</span>
+        <span class="monthly__card-tag">${RELATION_LABEL[relation]}</span>
+      </div>
+      <p class="monthly__card-text">${text}</p>
+    </div>`;
+  }
+  grid.innerHTML = html;
+}
+
+document.getElementById("monthlyToggleBtn").addEventListener("click", () => {
+  const grid = document.getElementById("monthlyGrid");
+  const btn = document.getElementById("monthlyToggleBtn");
+  grid.hidden = !grid.hidden;
+  btn.textContent = grid.hidden ? "월별 운세 펼쳐보기 ▾" : "월별 운세 접기 ▴";
+});
 
 // ---- PWA 서비스워커 등록 (선택 사항, 실패해도 앱 동작에는 문제 없음) ----
 if ("serviceWorker" in navigator) {
