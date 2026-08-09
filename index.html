@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>오늘의 운세</title>
+<meta name="description" content="생년월일을 입력하면 오늘의 운세를 알려주는 무료 웹앱">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<main class="app">
+  <header class="app__header">
+    <div class="app__moon">🌙</div>
+    <h1>오늘의 운세</h1>
+    <p class="app__subtitle" id="todayLabel"></p>
+  </header>
+
+  <section class="card" id="formCard">
+    <label for="birthdate">생년월일을 입력하세요</label>
+    <input type="date" id="birthdate" required>
+    <button id="showBtn">오늘의 운세 보기 ✨</button>
+  </section>
+
+  <section class="card result" id="resultCard" hidden>
+    <div class="result__top">
+      <div class="result__zodiac" id="zodiacEmoji"></div>
+      <div class="result__zodiacName" id="zodiacName"></div>
+    </div>
+
+    <div class="result__item">
+      <span class="result__label">총운</span>
+      <p class="result__text" id="fortuneGeneral"></p>
+    </div>
+    <div class="result__item">
+      <span class="result__label">애정운</span>
+      <p class="result__text" id="fortuneLove"></p>
+    </div>
+    <div class="result__item">
+      <span class="result__label">금전운</span>
+      <p class="result__text" id="fortuneMoney"></p>
+    </div>
+    <div class="result__item">
+      <span class="result__label">건강운</span>
+      <p class="result__text" id="fortuneHealth"></p>
+    </div>
+
+    <div class="result__badges">
+      <div class="badge">
+        <span class="badge__label">행운의 색</span>
+        <span class="badge__value" id="luckyColor"></span>
+      </div>
+      <div class="badge">
+        <span class="badge__label">행운의 숫자</span>
+        <span class="badge__value" id="luckyNumber"></span>
+      </div>
+    </div>
+
+    <div class="advice">
+      <span class="advice__label">오늘의 한마디</span>
+      <p class="advice__text" id="advice"></p>
+    </div>
+
+    <button id="backBtn">다시 입력하기</button>
+  </section>
+
+  <footer class="app__footer">
+    <p>매일 자정에 새로운 운세로 바뀌어요 · 같은 날엔 같은 결과예요</p>
+  </footer>
+</main>
+
+<script src="script.js"></script>
+</body>
+</html>

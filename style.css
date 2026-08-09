@@ -1,0 +1,187 @@
+:root {
+  --bg-top: #1b1030;
+  --bg-bottom: #3a1f5c;
+  --card-bg: rgba(255, 255, 255, 0.08);
+  --card-border: rgba(255, 255, 255, 0.16);
+  --gold: #f4c96b;
+  --text: #f3eefb;
+  --text-dim: #c9bfe0;
+  --accent: #ff8fb1;
+}
+
+* { box-sizing: border-box; }
+
+[hidden] { display: none !important; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: "Apple SD Gothic Neo", "Malgun Gothic", "Segoe UI", sans-serif;
+  background: radial-gradient(circle at 50% 0%, var(--bg-bottom), var(--bg-top) 70%);
+  color: var(--text);
+  display: flex;
+  justify-content: center;
+  padding: 32px 16px 60px;
+}
+
+.app {
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.app__header {
+  text-align: center;
+  margin-bottom: 4px;
+}
+
+.app__moon {
+  font-size: 40px;
+  line-height: 1;
+}
+
+.app__header h1 {
+  margin: 8px 0 4px;
+  font-size: 26px;
+  letter-spacing: 2px;
+}
+
+.app__subtitle {
+  margin: 0;
+  color: var(--text-dim);
+  font-size: 14px;
+}
+
+.card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 20px;
+  padding: 24px 20px;
+  backdrop-filter: blur(6px);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.card label {
+  font-size: 15px;
+  color: var(--text-dim);
+}
+
+#birthdate {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--card-border);
+  background: rgba(255, 255, 255, 0.9);
+  color: #2a2a2a;
+  font-size: 16px;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  border-radius: 12px;
+  padding: 14px;
+  font-size: 16px;
+  font-weight: 600;
+  background: linear-gradient(135deg, var(--gold), var(--accent));
+  color: #2a1a10;
+  transition: transform 0.12s ease;
+}
+
+button:active { transform: scale(0.97); }
+
+#backBtn {
+  margin-top: 8px;
+  background: transparent;
+  border: 1px solid var(--card-border);
+  color: var(--text);
+}
+
+.result__top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+
+.result__zodiac { font-size: 34px; }
+.result__zodiacName { font-size: 18px; font-weight: 600; }
+
+.result__item {
+  border-top: 1px solid var(--card-border);
+  padding-top: 12px;
+}
+
+.result__label {
+  display: inline-block;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--gold);
+  letter-spacing: 1px;
+  margin-bottom: 4px;
+}
+
+.result__text {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.result__badges {
+  display: flex;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.badge {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--card-border);
+  border-radius: 14px;
+  padding: 10px;
+  text-align: center;
+}
+
+.badge__label {
+  display: block;
+  font-size: 12px;
+  color: var(--text-dim);
+  margin-bottom: 4px;
+}
+
+.badge__value {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.advice {
+  margin-top: 4px;
+  border-top: 1px dashed var(--card-border);
+  padding-top: 12px;
+}
+
+.advice__label {
+  display: block;
+  font-size: 13px;
+  color: var(--gold);
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.advice__text {
+  margin: 0;
+  font-style: italic;
+  color: var(--text-dim);
+  line-height: 1.5;
+}
+
+.app__footer {
+  text-align: center;
+  color: var(--text-dim);
+  font-size: 12px;
+  margin-top: 4px;
+}
