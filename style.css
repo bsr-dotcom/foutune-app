@@ -154,9 +154,23 @@ button:active { transform: scale(0.97); }
 .result__zodiac { font-size: 34px; }
 .result__zodiacName { font-size: 18px; font-weight: 600; }
 
-.saju, .saju__daymaster, .saju__elements, .saju__daeun, .recommend {
+.saju, .saju__daymaster, .saju__elements, .saju__daeun, .recommend, .mbti {
   border-top: 1px solid var(--card-border);
   padding-top: 12px;
+}
+
+.mbti__code {
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: 3px;
+  color: var(--gold);
+  margin: 4px 0 6px;
+}
+
+.mbti__disclaimer {
+  margin: 6px 0 0;
+  font-size: 11px;
+  color: var(--text-dim);
 }
 
 .recommend__row {

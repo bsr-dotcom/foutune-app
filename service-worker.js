@@ -1,4 +1,4 @@
-const CACHE_NAME = "fortune-app-v6";
+const CACHE_NAME = "fortune-app-v7";
 const FILES_TO_CACHE = [
   "./",
   "./index.html",

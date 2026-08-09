@@ -24,6 +24,51 @@ function elementRelation(dme, other) {
 
 const RELATION_LABEL = { 비화: "동행", 식상: "표현", 재성: "결실", 관성: "긴장", 인성: "지원" };
 
+// 오늘의 운세로 뽑은 MBTI(재미용): 오늘의 일진 관계(E/I), 오행 분포(S/N), 일간 음양(T/F), 대운 방향(J/P)
+const MBTI_DESC = {
+  INTJ: "치밀한 전략가의 기운이에요. 오늘은 큰 그림을 그리며 차분히 계획을 세우기 좋아요.",
+  INTP: "호기심 가득한 사색가의 기운이에요. 오늘은 새로운 아이디어를 파고들기 좋아요.",
+  ENTJ: "추진력 있는 지휘관의 기운이에요. 오늘은 목표를 향해 거침없이 나아가기 좋아요.",
+  ENTP: "재기발랄한 발명가의 기운이에요. 오늘은 새로운 시도와 토론을 즐기기 좋아요.",
+  INFJ: "통찰력 있는 조언가의 기운이에요. 오늘은 깊이 있는 대화가 잘 통해요.",
+  INFP: "따뜻한 몽상가의 기운이에요. 오늘은 감성적인 영감이 잘 떠올라요.",
+  ENFJ: "다정한 주인공의 기운이에요. 오늘은 주변 사람을 이끌고 챙기기 좋아요.",
+  ENFP: "활기찬 활동가의 기운이에요. 오늘은 새로운 인연과 경험에 열려있기 좋아요.",
+  ISTJ: "성실한 관리자의 기운이에요. 오늘은 꼼꼼하게 마무리 짓기 좋아요.",
+  ISFJ: "헌신적인 수호자의 기운이에요. 오늘은 주변을 세심하게 챙기기 좋아요.",
+  ESTJ: "체계적인 경영자의 기운이에요. 오늘은 효율적으로 일을 처리하기 좋아요.",
+  ESFJ: "사교적인 집정관의 기운이에요. 오늘은 사람들과 어울리며 힘을 얻어요.",
+  ISTP: "차분한 장인의 기운이에요. 오늘은 손으로 뭔가를 만들거나 문제를 해결하기 좋아요.",
+  ISFP: "온화한 예술가의 기운이에요. 오늘은 감각적인 것에 끌리기 좋아요.",
+  ESTP: "즉흥적인 사업가의 기운이에요. 오늘은 몸을 움직이며 기회를 잡기 좋아요.",
+  ESFP: "유쾌한 연예인의 기운이에요. 오늘은 즐겁게 분위기를 띄우기 좋아요.",
+};
+
+function deriveTodayMBTI(dayMasterElement, relation, elementCounts, dayStemIndex, daeunDirection) {
+  let ei;
+  if (relation === "식상" || relation === "재성") ei = "E";
+  else if (relation === "관성" || relation === "인성") ei = "I";
+  else ei = (dayMasterElement === "화" || dayMasterElement === "목") ? "E" : "I";
+
+  const practical = elementCounts.토 + elementCounts.금;
+  const imaginative = elementCounts.목 + elementCounts.화;
+  let sn;
+  if (practical > imaginative) sn = "S";
+  else if (imaginative > practical) sn = "N";
+  else sn = elementCounts.수 > 0 ? "N" : "S";
+
+  const tf = dayStemIndex % 2 === 0 ? "T" : "F";
+  const jp = daeunDirection === "순행" ? "J" : "P";
+
+  return ei + sn + tf + jp;
+}
+
+function renderMBTI(dayMasterElement, relation, elementCounts, dayStemIndex, daeunDirection) {
+  const code = deriveTodayMBTI(dayMasterElement, relation, elementCounts, dayStemIndex, daeunDirection);
+  document.getElementById("mbtiCode").textContent = code;
+  document.getElementById("mbtiText").textContent = MBTI_DESC[code];
+}
+
 function toJulianDayNumber(y, m, d) {
   const a = Math.floor((14 - m) / 12);
   const yy = y + 4800 - a;
@@ -539,17 +584,21 @@ function renderSaju(saju, gender) {
     : "역행은 시간의 흐름과 반대 방향으로 대운이 진행돼서, 예상 밖의 전환점이 상대적으로 자주 찾아올 수 있어요.";
   document.getElementById("daeunText").textContent =
     `${gender} · ${STEMS[saju.year.stem]}(${STEM_ELEMENT[saju.year.stem]}) 년간 기준으로 대운은 ${direction}합니다. ${directionDetail} 실제 대운이 시작되는 나이는 절기 시각까지 정밀하게 계산해야 나오기 때문에, 이 앱에서는 방향만 참고용으로 안내해요.`;
+
+  return { elementCounts: counts, daeunDirection: direction };
 }
 
 function renderAll(birthdateStr, timeStr, timeUnknown, gender) {
   const saju = calcSaju(birthdateStr, timeStr, timeUnknown);
-  renderSaju(saju, gender);
+  const { elementCounts, daeunDirection } = renderSaju(saju, gender);
 
   const dayMasterElement = STEM_ELEMENT[saju.day.stem];
   const today = new Date();
   const todayDayIdx = getDayGanzhiIndex(today.getFullYear(), today.getMonth() + 1, today.getDate());
   const todayElement = STEM_ELEMENT[todayDayIdx % 10];
   const relation = elementRelation(dayMasterElement, todayElement);
+
+  renderMBTI(dayMasterElement, relation, elementCounts, saju.day.stem, daeunDirection);
 
   const seedBase = simpleHash(birthdateStr + "_" + gender + "_" + todayKey());
   const year = parseInt(birthdateStr.split("-")[0], 10);
