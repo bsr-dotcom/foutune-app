@@ -204,7 +204,7 @@ button:active { transform: scale(0.97); }
   opacity: 0.7;
 }
 
-.recommend__retry {
+.recommend__retry, .recommend__play {
   background: transparent;
   border: 1px solid var(--card-border);
   color: var(--text-dim);
@@ -214,9 +214,25 @@ button:active { transform: scale(0.97); }
   border-radius: 999px;
 }
 
+.recommend__play {
+  color: var(--gold);
+  border-color: var(--gold);
+}
+
 .recommend__retry:disabled {
   opacity: 0.4;
   cursor: default;
+}
+
+.recommend__player {
+  margin-top: 8px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #000;
+}
+
+.recommend__player iframe {
+  display: block;
 }
 
 .saju__grid {

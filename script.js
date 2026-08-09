@@ -254,31 +254,32 @@ const MONTHLY_TEXT = {
 };
 
 // 일간(나의 타고난) 오행에 따른 오늘의 추천 - 매일 조금씩 바뀌도록 여러 항목 중 하나를 선택
+// id는 해당 곡의 공식/대표 유튜브 영상 ID (1분 미리듣기 재생용)
 const SONG_BY_ELEMENT = {
   목: [
-    { title: "이름에게", artist: "아이유" },
-    { title: "주저하는 연인들을 위해", artist: "잔나비" },
-    { title: "여행", artist: "볼빨간사춘기" },
+    { title: "이름에게", artist: "아이유", id: "8zsYZFvKniw" },
+    { title: "주저하는 연인들을 위해", artist: "잔나비", id: "GpQ222I1ULc" },
+    { title: "여행", artist: "볼빨간사춘기", id: "xRbPAVnqtcs" },
   ],
   화: [
-    { title: "Dynamite", artist: "방탄소년단" },
-    { title: "HIP", artist: "마마무" },
-    { title: "Uptown Funk", artist: "Bruno Mars" },
+    { title: "Dynamite", artist: "방탄소년단", id: "gdZLi9oWNZg" },
+    { title: "HIP", artist: "마마무", id: "KhTeiaCezwM" },
+    { title: "Uptown Funk", artist: "Bruno Mars", id: "OPf0YbXqDm0" },
   ],
   토: [
-    { title: "모든 날, 모든 순간", artist: "폴킴" },
-    { title: "헤픈 우연", artist: "헤이즈" },
-    { title: "눈사람", artist: "정승환" },
+    { title: "모든 날, 모든 순간", artist: "폴킴", id: "nq0BYGyH2Do" },
+    { title: "헤픈 우연", artist: "헤이즈", id: "AJPLgrfBiBo" },
+    { title: "눈사람", artist: "정승환", id: "gPNu9OIj4Zo" },
   ],
   금: [
-    { title: "Blueming", artist: "아이유" },
-    { title: "Breeze", artist: "나윤선" },
-    { title: "re:member", artist: "Ólafur Arnalds" },
+    { title: "Blueming", artist: "아이유", id: "D1PvIWdJ8xo" },
+    { title: "Come Away With Me", artist: "Norah Jones", id: "lbjZPFBD6JU" },
+    { title: "re:member", artist: "Ólafur Arnalds", id: "oAhO5eegMfY" },
   ],
   수: [
-    { title: "밤편지", artist: "아이유" },
-    { title: "Kiss the Rain", artist: "이루마" },
-    { title: "안녕", artist: "폴킴" },
+    { title: "밤편지", artist: "아이유", id: "BzYnNdJhZQw" },
+    { title: "Kiss the Rain", artist: "이루마", id: "imGaOIm5HOk" },
+    { title: "안녕", artist: "폴킴", id: "_niSIiVMEos" },
   ],
 };
 
@@ -409,14 +410,43 @@ showBtn.addEventListener("click", () => {
 });
 
 // ---- 음악/책 추천 & 1회 재추천 ----
-const recState = { element: null, songIndex: -1, bookIndex: -1 };
+const recState = { element: null, songIndex: -1, bookIndex: -1, songId: null };
+
+let musicPreviewTimer = null;
+
+function stopMusicPreview() {
+  if (musicPreviewTimer) {
+    clearTimeout(musicPreviewTimer);
+    musicPreviewTimer = null;
+  }
+  document.getElementById("recMusicIframe").src = "";
+  document.getElementById("recMusicPlayer").hidden = true;
+  document.getElementById("recMusicPlay").textContent = "▶ 1분 미리듣기";
+}
 
 function renderSong(element, index) {
   const song = SONG_BY_ELEMENT[element][index];
+  recState.songId = song.id;
   document.getElementById("recMusic").textContent = `${song.title} - ${song.artist}`;
   document.getElementById("recMusicLink").href =
     `https://www.youtube.com/results?search_query=${encodeURIComponent(song.artist + " " + song.title)}`;
+  stopMusicPreview();
 }
+
+document.getElementById("recMusicPlay").addEventListener("click", () => {
+  const player = document.getElementById("recMusicPlayer");
+  const iframe = document.getElementById("recMusicIframe");
+  const btn = document.getElementById("recMusicPlay");
+
+  if (!player.hidden) {
+    stopMusicPreview();
+    return;
+  }
+  iframe.src = `https://www.youtube-nocookie.com/embed/${recState.songId}?autoplay=1&start=0`;
+  player.hidden = false;
+  btn.textContent = "⏸ 정지 (1분 후 자동정지)";
+  musicPreviewTimer = setTimeout(stopMusicPreview, 60000);
+});
 
 function renderBook(element, index) {
   const book = BOOK_BY_ELEMENT[element][index];
@@ -454,6 +484,7 @@ document.getElementById("recBookRetry").addEventListener("click", () => {
 });
 
 backBtn.addEventListener("click", () => {
+  stopMusicPreview();
   resultCard.hidden = true;
   formCard.hidden = false;
 });
