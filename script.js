@@ -608,9 +608,9 @@ function renderAll(birthdateStr, timeStr, timeUnknown, gender) {
   document.getElementById("zodiacName").textContent = zodiac.name;
 
   recState.element = dayMasterElement;
-  recState.songIndex = (seedBase + 31) % SONG_BY_ELEMENT[dayMasterElement].length;
+  recState.songIndex = Math.floor(Math.random() * SONG_BY_ELEMENT[dayMasterElement].length);
   renderSong(recState.element, recState.songIndex);
-  recState.bookIndex = (seedBase + 37) % BOOK_BY_ELEMENT[dayMasterElement].length;
+  recState.bookIndex = Math.floor(Math.random() * BOOK_BY_ELEMENT[dayMasterElement].length);
   renderBook(recState.element, recState.bookIndex);
 
   const musicRetryBtn = document.getElementById("recMusicRetry");
@@ -636,8 +636,12 @@ function renderAll(birthdateStr, timeStr, timeUnknown, gender) {
 }
 
 function renderMonthly(dayMasterElement) {
-  const year = new Date().getFullYear();
-  document.getElementById("monthlyYearLabel").textContent = `${year}년 기준 (양력, 절기 근사치 적용)`;
+  const today = new Date();
+  const startYear = today.getFullYear();
+  const startMonth = today.getMonth() + 1; // 1~12
+
+  document.getElementById("monthlyYearLabel").textContent =
+    `${startYear}년 ${startMonth}월부터 1년치 (양력, 절기 근사치 적용)`;
 
   const grid = document.getElementById("monthlyGrid");
   const toggleBtn = document.getElementById("monthlyToggleBtn");
@@ -645,15 +649,19 @@ function renderMonthly(dayMasterElement) {
   toggleBtn.textContent = "월별 운세 펼쳐보기 ▾";
 
   let html = "";
-  for (let m = 1; m <= 12; m++) {
+  for (let i = 0; i < 12; i++) {
+    const totalMonth = startMonth - 1 + i; // 0-based, 조회월부터 시작
+    const m = (totalMonth % 12) + 1;
+    const y = startYear + Math.floor(totalMonth / 12);
+
     const branch = getMonthBranchIndex(m, 15);
     const element = BRANCH_ELEMENT[branch];
     const relation = elementRelation(dayMasterElement, element);
-    const seed = simpleHash(`${year}-${m}-monthly`);
+    const seed = simpleHash(`${y}-${m}-monthly`);
     const text = pick(MONTHLY_TEXT[relation], seed);
     html += `<div class="monthly__card">
       <div class="monthly__card-head">
-        <span class="monthly__card-month">${m}월</span>
+        <span class="monthly__card-month">${y}년 ${m}월</span>
         <span class="monthly__card-tag">${RELATION_LABEL[relation]}</span>
       </div>
       <p class="monthly__card-text">${text}</p>
